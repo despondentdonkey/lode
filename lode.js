@@ -75,10 +75,12 @@ LODE.createLoader = function() {
                         loadComplete(callback);
                     });
                 } else if (asset instanceof LODE.TextFile) {
-                    LODE.loadTextFile(asset.path, function(data) {
-                        asset.data = data;
-                        loadComplete(callback);
-                    });
+                    (function(asset) { //Requires an anonymous function since asset is used in another callback.
+                        LODE.loadTextFile(asset.path, function(data) {
+                            asset.data = data;
+                            loadComplete(callback);
+                        });
+                    })(asset);
                 }
             }
         }
