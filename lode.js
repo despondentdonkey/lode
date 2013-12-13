@@ -49,8 +49,16 @@ LODE.createLoader = function() {
 
         //Call this when the document has been loaded. Specify a callback function to continue after the assets have been loaded.
         load: function(callback) {
+            var onLoad = this.onLoad;
+
             var loadComplete = function(cb) {
                 loaded++;
+
+                //Meant to be overidden. Gives you the ratio of files loaded.
+                if (onLoad) {
+                    onLoad(loaded / assets.length);
+                }
+
                 if (loaded >= assets.length) {
                     cb();
                 }
