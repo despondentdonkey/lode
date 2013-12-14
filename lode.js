@@ -1,22 +1,24 @@
 var LODE = {
-    loadTextFile: function(fileName, callback) {
-        var xmlhttp = new XMLHttpRequest();
+    loadFile: function(fileName, type, callback) {
+        var request = new XMLHttpRequest();
+        request.open("GET", fileName, true);
+        request.responseType = type;
 
-        xmlhttp.onreadystatechange = function() {
-            if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-                if (callback) {
-                    callback(xmlhttp.responseText);
-                }
+        if (callback) {
+            request.onload = function() {
+                console.log(request);
+                callback(request.response);
             }
         }
 
-        xmlhttp.open("GET", fileName, true);
-        xmlhttp.send();
+        request.send();
+        return request;
     }
 };
 
-LODE.TextFile = function(path) {
+LODE.File = function(path, type) {
     this.path = path;
+    this.type = type;
 };
 
 //Loads Image and Audio assets that have been added.
@@ -40,9 +42,9 @@ LODE.createLoader = function() {
             return newAudio;
         },
 
-        //Loads file via ajax. Returns a LODE.TextFile instance. LODE.TextFile.data will be available after loading is complete.
-        loadFile: function(path) {
-            var file = new LODE.TextFile(path);
+        //Loads a file via ajax. Defaults to loading text.
+        loadFile: function(path, type) {
+            var file = new LODE.File(path, type);
             assets.push(file);
             return file;
         },
@@ -74,9 +76,9 @@ LODE.createLoader = function() {
                     asset.addEventListener('canplay', function() {
                         loadComplete(callback);
                     });
-                } else if (asset instanceof LODE.TextFile) {
+                } else if (asset instanceof LODE.File) {
                     (function(asset) { //Requires an anonymous function since asset is used in another callback.
-                        LODE.loadTextFile(asset.path, function(data) {
+                        LODE.loadFile(asset.path, asset.type, function(data) {
                             asset.data = data;
                             loadComplete(callback);
                         });
@@ -86,5 +88,3 @@ LODE.createLoader = function() {
         }
     };
 };
-
-
