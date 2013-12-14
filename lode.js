@@ -6,10 +6,17 @@ var LODE = {
 
         if (callback) {
             request.onload = function() {
-                console.log(request);
                 callback(request.response);
-            }
+            };
         }
+
+        request.onerror = function() {
+            console.error("Error loading file '" + fileName  + "'.");
+        };
+
+        request.onabort = function() {
+            console.error("Loading file '" + fileName + "' has been aborted.");
+        };
 
         request.send();
         return request;
