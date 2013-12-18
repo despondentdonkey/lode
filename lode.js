@@ -80,7 +80,7 @@ LODE.createLoader = function() {
                         loadComplete(callback);
                     });
                 } else if (asset instanceof Audio) {
-                    asset.addEventListener('canplay', function() {
+                    asset.addEventListener('loadeddata', function() {
                         loadComplete(callback);
                     });
                 } else if (asset instanceof LODE.File) {
