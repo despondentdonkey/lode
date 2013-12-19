@@ -1,5 +1,5 @@
 var LODE = {
-    loadFile: function(fileName, type, callback) {
+    createAjaxRequest: function(fileName, type, callback) {
         var request = new XMLHttpRequest();
         request.open("GET", fileName, true);
         request.responseType = type;
@@ -18,7 +18,6 @@ var LODE = {
             console.error("Loading file '" + fileName + "' has been aborted.");
         };
 
-        request.send();
         return request;
     }
 };
@@ -51,6 +50,9 @@ LODE.createLoader = function() {
 
         //Loads a file via ajax. Defaults to loading text.
         loadFile: function(path, type) {
+            if (!type) {
+                type = 'text';
+            }
             var file = new LODE.File(path, type);
             assets.push(file);
             return file;
@@ -85,10 +87,11 @@ LODE.createLoader = function() {
                     });
                 } else if (asset instanceof LODE.File) {
                     (function(asset) { //Requires an anonymous function since asset is used in another callback.
-                        LODE.loadFile(asset.path, asset.type, function(data) {
+                        var request = LODE.createAjaxRequest(asset.path, asset.type, function(data) {
                             asset.data = data;
                             loadComplete(callback);
                         });
+                        request.send();
                     })(asset);
                 }
             }
