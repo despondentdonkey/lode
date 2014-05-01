@@ -75,6 +75,10 @@ LODE.createLoader = function() {
                 }
             };
 
+            if (assets.length <= 0) {
+                loadComplete(callback);
+            }
+
             for (var i=0; i<assets.length; i++) {
                 var asset = assets[i];
                 if (asset instanceof Image) {
