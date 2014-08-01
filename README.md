@@ -1,11 +1,11 @@
 lode
 ====
 
-A JavaScript asset loader.
+Manages the loading of images, audio, and other files.
 
 Example:
 
-    var loader = LODE.createLoader();
+    var loader = LODE.createLoader(); //Can also be used as an AMD module.
 
     var img = loader.loadImage('myImg.png');
     var audio = loader.loadAudio('myAudio.mp3');
@@ -15,12 +15,12 @@ Example:
         console.log('Loading complete!');
         console.dir(img);
         console.dir(audio);
+        console.log(textFile.data);
 
-        var canvas = document.getElementById('canvas'); //Assuming you have '<canvas id="canvas"></canvas>' in your HTML.
+        var canvas = document.createElement('canvas');
         var gc = canvas.getContext('2d');
         gc.drawImage(img, 0, 0);
+        document.body.appendChild(canvas);
 
         audio.play();
-
-        console.log(textFile.data);
     });
