@@ -66,14 +66,57 @@ asyncTest("ratio correct", function(assert) {
         this.loader.loadImage('res/test.png');
     }
 
-    this.loader.onLoad = function(ratio) {
-        currentIndex++;
-        var calculatedRatio = currentIndex / totalLoad;
-        ok(calculatedRatio === ratio, 'ratio for file ' + currentIndex + ' correct; ' + ratio);
-    };
+    this.loader.load({
+        onLoadComplete: function() {
+            ok(currentIndex === totalLoad, 'all files loaded');
+            start();
+        },
+        onFileLoad: function(ratio) {
+            currentIndex++;
+            var calculatedRatio = currentIndex / totalLoad;
+            ok(calculatedRatio === ratio, 'ratio for file ' + currentIndex + ' correct; ' + ratio);
+        },
+    });
+});
+
+asyncTest("image error", function(assert) {
+    this.loader.loadImage('res/shouldnotexist.png');
+    this.loader.load({
+         onFileError: function() {
+            ok(true, 'error received');
+            start();
+        }
+    });
+});
+
+asyncTest("audio error", function(assert) {
+    this.loader.loadAudio('res/shouldnotexist.mp3');
+    this.loader.load({
+        onFileError: function() {
+            ok(true, 'error received');
+            start();
+        }
+    });
+});
+
+asyncTest("file error", function(assert) {
+    this.loader.loadFile('res/shouldnotexist.txt');
+    this.loader.load({
+        onFileError: function() {
+            ok(true, 'error received');
+            start();
+        }
+    });
+});
+
+// Continues to load even if a file has an error.
+asyncTest("continued after error", function(assert) {
+    this.loader.loadImage('res/test.png');
+    this.loader.loadImage('res/shouldnotexist.png');
+    this.loader.loadAudio('res/test.mp3');
 
     this.loader.load(function() {
-        ok(currentIndex === totalLoad, 'all files loaded');
+        ok(true);
         start();
     });
 });

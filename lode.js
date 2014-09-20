@@ -14,20 +14,24 @@
         this.type = type;
     }
 
-    function createAjaxRequest(fileName, type, callback) {
+    function createAjaxRequest(fileName, type, onLoad, onError) {
         var request = new XMLHttpRequest();
         request.open("GET", fileName, true);
         request.responseType = type;
 
-        if (callback) {
+        if (onLoad) {
             request.onload = function() {
-                callback(request.response);
+                if (request.status === 200) { // http status 200 = ok
+                    onLoad(request.response);
+                } else {
+                    if (onError) {
+                        onError(request);
+                    } else {
+                        console.error("Error loading file '" + fileName  + "'.");
+                    }
+                }
             };
         }
-
-        request.onerror = function() {
-            console.error("Error loading file '" + fileName  + "'.");
-        };
 
         request.onabort = function() {
             console.error("Loading file '" + fileName + "' has been aborted.");
@@ -68,41 +72,65 @@
             },
 
             //Call this when the document has been loaded. Specify a callback function to continue after the assets have been loaded.
-            load: function(callback) {
-                var onLoad = this.onLoad;
+            load: function(callbacks) {
+                if (typeof callbacks === 'function') {
+                    callbacks = {onLoadComplete: callbacks};
+                }
 
-                var loadComplete = function(cb) {
+                var loadComplete = function() {
                     loaded++;
 
-                    //Meant to be overidden. Gives you the ratio of files loaded.
-                    if (onLoad) {
-                        onLoad(loaded / assets.length);
+                    // Called when a file has loaded. Gives you the ratio of files loaded.
+                    if (callbacks.onFileLoad) {
+                        callbacks.onFileLoad(loaded / assets.length);
                     }
 
                     if (loaded >= assets.length) {
-                        cb();
+                        if (callbacks.onLoadComplete) {
+                            callbacks.onLoadComplete();
+                        }
                     }
                 };
 
+                var loadError = function(asset) {
+                    if (callbacks.onFileError) {
+                        callbacks.onFileError(asset);
+                    }
+
+                    // Continue loading the others even though this failed.
+                    // TODO: Pass status (loaded/failed). Option to continue loading after failure or to stop loading.
+                    loadComplete(callbacks.onLoadComplete);
+                };
+
                 if (assets.length <= 0) {
-                    loadComplete(callback);
+                    loadComplete(callbacks.onLoadComplete);
                 }
 
                 for (var i=0; i<assets.length; i++) {
                     var asset = assets[i];
                     if (asset instanceof Image) {
                         asset.addEventListener('load', function() {
-                            loadComplete(callback);
+                            loadComplete(callbacks.onLoadComplete);
+                        });
+
+                        asset.addEventListener('error', function() {
+                            loadError(asset);
                         });
                     } else if (asset instanceof Audio) {
                         asset.addEventListener('loadeddata', function() {
-                            loadComplete(callback);
+                            loadComplete(callbacks.onLoadComplete);
+                        });
+
+                        asset.addEventListener('error', function() {
+                            loadError(asset);
                         });
                     } else if (asset instanceof File) {
-                        (function(asset) { //Requires an anonymous function since asset is used in another callback.
+                        (function(asset) { //Requires an anonymous function since asset is used in another onLoadComplete.
                             var request = createAjaxRequest(asset.path, asset.type, function(data) {
                                 asset.data = data;
-                                loadComplete(callback);
+                                loadComplete(callbacks.onLoadComplete);
+                            }, function onFileError() {
+                                loadError(asset);
                             });
                             request.send();
                         })(asset);
