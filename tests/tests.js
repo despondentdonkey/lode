@@ -114,10 +114,13 @@ asyncTest("continued after error", function(assert) {
     this.loader.loadImage('res/test.png');
     this.loader.loadImage('res/shouldnotexist.png');
     this.loader.loadAudio('res/test.mp3');
+    this.loader.loadAudio('res/shouldnotexist.mp3');
+    this.loader.loadFile('res/shouldnotexist.txt');
 
     this.loader.load({
-        onLoadComplete: function() {
-            ok(true);
+        onLoadComplete: function(errors) {
+            ok(true, 'completed loading');
+            ok(errors.length === 3, 'contains 3 errors');
             start();
         },
         onLoadFail: function() {

@@ -76,6 +76,8 @@
             //Call this when the document has been loaded. Specify a callback function to continue after the assets have been loaded.
             load: function(callbacks) {
                 var stopIfErrors = this.stopIfErrors;
+                var erroredAssets = [];
+
                 if (typeof callbacks === 'function') {
                     callbacks = {onLoadComplete: callbacks};
                 }
@@ -90,12 +92,14 @@
 
                     if (loaded >= assets.length) {
                         if (callbacks.onLoadComplete) {
-                            callbacks.onLoadComplete();
+                            callbacks.onLoadComplete(erroredAssets);
                         }
                     }
                 };
 
                 var loadError = function(asset) {
+                    erroredAssets.push(asset);
+
                     if (callbacks.onFileError) {
                         callbacks.onFileError(asset);
                     }
@@ -105,29 +109,28 @@
                             callbacks.onLoadFail();
                         }
                     } else {
-                        // Continue loading the others even though this failed.
-                        // TODO: Pass status (loaded/failed).
-                        loadComplete(callbacks.onLoadComplete);
+                        // Continue loading even though this file failed.
+                        loadComplete();
                     }
                 };
 
                 if (assets.length <= 0) {
-                    loadComplete(callbacks.onLoadComplete);
+                    loadComplete();
                 }
 
                 for (var i=0; i<assets.length; i++) {
                     var asset = assets[i];
                     if (asset instanceof Image) {
                         asset.addEventListener('load', function() {
-                            loadComplete(callbacks.onLoadComplete);
+                            loadComplete();
                         });
 
-                        asset.addEventListener('error', function() {
+                        asset.addEventListener('error', function(e) {
                             loadError(asset);
                         });
                     } else if (asset instanceof Audio) {
                         asset.addEventListener('loadeddata', function() {
-                            loadComplete(callbacks.onLoadComplete);
+                            loadComplete();
                         });
 
                         asset.addEventListener('error', function() {
@@ -137,7 +140,7 @@
                         (function(asset) { //Requires an anonymous function since asset is used in another onLoadComplete.
                             var request = createAjaxRequest(asset.path, asset.type, function(data) {
                                 asset.data = data;
-                                loadComplete(callbacks.onLoadComplete);
+                                loadComplete();
                             }, function onFileError() {
                                 loadError(asset);
                             });
