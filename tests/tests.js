@@ -115,8 +115,33 @@ asyncTest("continued after error", function(assert) {
     this.loader.loadImage('res/shouldnotexist.png');
     this.loader.loadAudio('res/test.mp3');
 
-    this.loader.load(function() {
-        ok(true);
-        start();
+    this.loader.load({
+        onLoadComplete: function() {
+            ok(true);
+            start();
+        },
+        onLoadFail: function() {
+            ok(false);
+            start();
+        }
+    });
+});
+
+// Stop loading if a file has an error.
+asyncTest("stopped after error", function(assert) {
+    this.loader.loadImage('res/test.png');
+    this.loader.loadImage('res/shouldnotexist.png');
+    this.loader.loadAudio('res/test.mp3');
+    this.loader.stopIfErrors = true;
+
+    this.loader.load({
+        onLoadComplete: function() {
+            ok(false);
+            start();
+        },
+        onLoadFail: function() {
+            ok(true);
+            start();
+        }
     });
 });

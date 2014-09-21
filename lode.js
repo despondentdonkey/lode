@@ -47,6 +47,8 @@
         var loaded = 0;
 
         return {
+            stopIfErrors: false,
+
             loadImage: function(src) {
                 var newImage = new Image();
                 newImage.src = src;
@@ -73,6 +75,7 @@
 
             //Call this when the document has been loaded. Specify a callback function to continue after the assets have been loaded.
             load: function(callbacks) {
+                var stopIfErrors = this.stopIfErrors;
                 if (typeof callbacks === 'function') {
                     callbacks = {onLoadComplete: callbacks};
                 }
@@ -97,9 +100,15 @@
                         callbacks.onFileError(asset);
                     }
 
-                    // Continue loading the others even though this failed.
-                    // TODO: Pass status (loaded/failed). Option to continue loading after failure or to stop loading.
-                    loadComplete(callbacks.onLoadComplete);
+                    if (stopIfErrors) {
+                        if (callbacks.onLoadFail) {
+                            callbacks.onLoadFail();
+                        }
+                    } else {
+                        // Continue loading the others even though this failed.
+                        // TODO: Pass status (loaded/failed).
+                        loadComplete(callbacks.onLoadComplete);
+                    }
                 };
 
                 if (assets.length <= 0) {
