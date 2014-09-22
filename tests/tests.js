@@ -1,4 +1,4 @@
-test("LODE defined", function(assert) {
+test('LODE defined', function(assert) {
     ok(LODE);
 });
 
@@ -8,7 +8,7 @@ module('load', {
     }
 });
 
-asyncTest("image", function(assert) {
+asyncTest('image', function(assert) {
     var img = this.loader.loadImage('res/test.png');
     ok(img, 'created');
 
@@ -18,7 +18,7 @@ asyncTest("image", function(assert) {
     });
 });
 
-asyncTest("audio", function(assert) {
+asyncTest('audio', function(assert) {
     var audio = this.loader.loadAudio('res/test.mp3');
     ok(audio, 'created');
 
@@ -28,25 +28,31 @@ asyncTest("audio", function(assert) {
     });
 });
 
-asyncTest("audio buffer", function(assert) {
-    var bufferFile = this.loader.loadFile('res/test.mp3', 'arraybuffer');
-    ok(bufferFile, 'created');
+if (window.AudioContext !== undefined) {
+    asyncTest('audio buffer', function(assert) {
+        var bufferFile = this.loader.loadFile('res/test.mp3', 'arraybuffer');
+        ok(bufferFile, 'created');
 
-    this.loader.load(function() {
-        ok(bufferFile.data instanceof ArrayBuffer, 'is an array buffer');
+        this.loader.load(function() {
+            ok(bufferFile.data instanceof ArrayBuffer, 'is an array buffer');
 
-        window.AudioContext = window.AudioContext||window.webkitAudioContext;
-        var audioCtx = new AudioContext();
-        audioCtx.decodeAudioData(bufferFile.data, function(buffer) {
-            var src = audioCtx.createBufferSource();
-            src.buffer = buffer;
-            ok(src instanceof AudioBufferSourceNode, 'audio buffer source node created');
-            start();
+            window.AudioContext = window.AudioContext||window.webkitAudioContext;
+            var audioCtx = new AudioContext();
+            audioCtx.decodeAudioData(bufferFile.data, function(buffer) {
+                var src = audioCtx.createBufferSource();
+                src.buffer = buffer;
+                ok(src instanceof AudioBufferSourceNode, 'audio buffer source node created');
+                start();
+            });
         });
     });
-});
+} else {
+    test('audio buffer', function() {
+        ok(false, 'Web Audio is not supported on this browser.');
+    });
+}
 
-asyncTest("text file", function(assert) {
+asyncTest('text file', function(assert) {
     var file = this.loader.loadFile('res/test.txt');
     ok(file, 'created');
 
@@ -58,7 +64,7 @@ asyncTest("text file", function(assert) {
     });
 });
 
-asyncTest("ratio correct", function(assert) {
+asyncTest('ratio correct', function(assert) {
     var totalLoad = 7;
     var currentIndex = 0;
 
@@ -79,7 +85,7 @@ asyncTest("ratio correct", function(assert) {
     });
 });
 
-asyncTest("image error", function(assert) {
+asyncTest('image error', function(assert) {
     this.loader.loadImage('res/shouldnotexist.png');
     this.loader.load({
          onFileError: function() {
@@ -89,7 +95,7 @@ asyncTest("image error", function(assert) {
     });
 });
 
-asyncTest("audio error", function(assert) {
+asyncTest('audio error', function(assert) {
     this.loader.loadAudio('res/shouldnotexist.mp3');
     this.loader.load({
         onFileError: function() {
@@ -99,7 +105,7 @@ asyncTest("audio error", function(assert) {
     });
 });
 
-asyncTest("file error", function(assert) {
+asyncTest('file error', function(assert) {
     this.loader.loadFile('res/shouldnotexist.txt');
     this.loader.load({
         onFileError: function() {
@@ -110,7 +116,7 @@ asyncTest("file error", function(assert) {
 });
 
 // Continues to load even if a file has an error.
-asyncTest("continued after error", function(assert) {
+asyncTest('continued after error', function(assert) {
     this.loader.loadImage('res/test.png');
     this.loader.loadImage('res/shouldnotexist.png');
     this.loader.loadAudio('res/test.mp3');
@@ -131,7 +137,7 @@ asyncTest("continued after error", function(assert) {
 });
 
 // Stop loading if a file has an error.
-asyncTest("stopped after error", function(assert) {
+asyncTest('stopped after error', function(assert) {
     this.loader.loadImage('res/test.png');
     this.loader.loadImage('res/shouldnotexist.png');
     this.loader.loadAudio('res/test.mp3');
