@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Parker Miller
+// Copyright (c) 2014 Parker Miller
 // LODE may be freely distributed under the MIT license.
 
 (function(root, createLode) {
@@ -193,7 +193,7 @@
     }
 
     return {
-        VERSION: '0.1.0',
+        VERSION: '0.2.0',
         File: File,
         createAjaxRequest: createAjaxRequest,
         createLoader: createLoader,
